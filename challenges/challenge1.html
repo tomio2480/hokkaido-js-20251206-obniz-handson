@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>課題1: スライダーLED制御</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* TODO: スライダーのスタイルを追加 */
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #ddd;
+            outline: none;
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status-info {
+            background: #e7f5ff;
+            color: #1971c2;
+            border-left: 4px solid #1971c2;
+        }
+
+        .status-success {
+            background: #d3f9d8;
+            color: #2b8a3e;
+            border-left: 4px solid #2b8a3e;
+        }
+
+        .status-error {
+            background: #ffe0e0;
+            color: #c92a2a;
+            border-left: 4px solid #c92a2a;
+        }
+
+        #control-area {
+            display: none;
+        }
+
+        .brightness-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎨 課題1: スライダーLED制御</h1>
+        <p class="subtitle">PWM制御で明るさを無段階調整</p>
+
+        <!-- 接続エリア -->
+        <div id="connection-area" class="section">
+            <h2>接続設定</h2>
+
+            <div class="input-group">
+                <label for="obniz-id">obniz ID</label>
+                <input type="text" id="obniz-id" placeholder="例: 1234-5678">
+            </div>
+
+            <div class="input-group">
+                <label for="led-port">認証ID（8文字）</label>
+                <input type="number" id="led-port" placeholder="0-3" min="0" max="3">
+            </div>
+
+            <button id="connect-btn" class="btn-primary">接続</button>
+
+            <div id="connection-status"></div>
+        </div>
+
+        <!-- 制御エリア -->
+        <div id="control-area">
+            <div class="section">
+                <h2>💡 LED明るさ調整</h2>
+                <p id="port-info" class="status status-info"></p>
+
+                <!-- TODO: ここにスライダーを追加してください -->
+                <!-- ヒント: <input type="range" id="brightness-slider" min="0" max="100" value="50"> -->
+
+                <div class="brightness-display">
+                    <span id="brightness-percent">50</span>%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/obniz/obniz.js"></script>
+    <script>
+        let obniz;
+        let myPort;
+        let isConnected = false;
+
+        // 接続処理
+        document.getElementById('connect-btn').addEventListener('click', async () => {
+            const obnizId = document.getElementById('obniz-id').value.trim();
+            myPort = parseInt(document.getElementById('led-port').value);
+
+            if (!obnizId || isNaN(myPort) || myPort < 0 || myPort > 3) {
+                showStatus('obniz IDとLEDポート番号（0-3）を正しく入力してください', 'error');
+                return;
+            }
+
+            try {
+                showStatus('接続中...', 'info');
+                obniz = new Obniz(obnizId);
+
+                obniz.onconnect = async () => {
+                    console.log('obnizに接続しました');
+                    showStatus('認証中...', 'info');
+                    obniz.send({ type: 'auth_attempt', id: authId });
+                };
+
+                obniz.onmessage = (message) => {
+                    if (message.type === 'auth_status') {
+                        if (message.success) {
+                            myPort = message.port;
+                            isConnected = true;
+                            showStatus(`認証成功！LEDポート: ${myPort}`, 'success');
+                            document.getElementById('port-info').textContent =
+                                `あなたのLEDポート: ${myPort}`;
+                            document.getElementById('control-area').style.display = 'block';
+                        } else {
+                            showStatus('認証失敗', 'error');
+                        }
+                    }
+                };
+
+            } catch (error) {
+                showStatus(`エラー: ${error.message}`, 'error');
+            }
+        });
+
+        // TODO: スライダーのイベントリスナーを追加してください
+        // ヒント:
+        // document.getElementById('brightness-slider').addEventListener('input', (e) => {
+        //     const ratio = parseInt(e.target.value);
+        //     document.getElementById('brightness-percent').textContent = ratio;
+        //     
+        //     // PWM制御メッセージを送信
+        //     obniz.send({ type: 'led_brightness', port: myPort, ratio: ratio });
+        // });
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status status-${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

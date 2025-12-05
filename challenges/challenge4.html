@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>課題4: 実用的な認証を持つログ記録</title>
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #fa709a;
+        }
+
+        h2 {
+            color: #fa709a;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #fa709a;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #fa709a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e85a85;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(250, 112, 154, 0.4);
+        }
+
+        .btn-success {
+            background: #51cf66;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #40c057;
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #fa5252;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .status-info {
+            background: #e7f5ff;
+            color: #1971c2;
+            border-left: 4px solid #1971c2;
+        }
+
+        .status-success {
+            background: #d3f9d8;
+            color: #2b8a3e;
+            border-left: 4px solid #2b8a3e;
+        }
+
+        .status-error {
+            background: #ffe0e0;
+            color: #c92a2a;
+            border-left: 4px solid #c92a2a;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        #control-area {
+            display: none;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .log-display {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔐 課題4: 実用的な認証を持つログ記録</h1>
+        <p class="subtitle">Google認証とセキュアなWebサービス連携</p>
+
+        <!-- Google認証エリア -->
+        <div class="section">
+            <h2>Google認証</h2>
+
+            <!-- TODO: Google Client IDを設定してください -->
+            <!-- 手順: Google Cloud Consoleでクライアントを作成し、data-client_idに設定 -->
+            <div id="g_id_onload" data-client_id="YOUR_CLIENT_ID_HERE" data-callback="handleCredentialResponse">
+            </div>
+            <div class="g_id_signin" data-type="standard"></div>
+
+            <div id="user-info" style="display: none;" class="user-info">
+                <img id="user-picture" src="" alt="User">
+                <div>
+                    <strong id="user-name"></strong><br>
+                    <small id="user-email"></small>
+                </div>
+            </div>
+        </div>
+
+        <!-- 接続エリア -->
+        <div id="connection-area" class="section">
+            <h2>obniz接続設定</h2>
+
+            <div class="input-group">
+                <label for="obniz-id">obniz ID</label>
+                <input type="text" id="obniz-id" placeholder="例: 1234-5678">
+            </div>
+
+            <div class="input-group">
+                <label for="led-port">認証ID（8文字）</label>
+                <input type="number" id="led-port" placeholder="0-3" min="0" max="3">
+            </div>
+
+            <div class="input-group">
+                <label for="gas-url">Google Apps Script URL</label>
+                <input type="text" id="gas-url" placeholder="GASデプロイURL">
+            </div>
+
+            <button id="connect-btn" class="btn-primary">接続</button>
+
+            <div id="connection-status"></div>
+        </div>
+
+        <!-- 制御エリア -->
+        <div id="control-area">
+            <div class="section">
+                <h2>💡 LED制御（ログ記録付き）</h2>
+                <p id="port-info" class="status status-info"></p>
+
+                <button id="led-on-btn" class="btn-success">LED ON</button>
+                <button id="led-off-btn" class="btn-danger">LED OFF</button>
+            </div>
+
+            <div class="section">
+                <h2>📝 操作ログ</h2>
+                <div class="log-display" id="log-display">
+                    <p style="color: #999;">ログはここに表示されます...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/obniz/obniz.js"></script>
+    <script>
+        let obniz;
+        let myPort;
+        let isConnected = false;
+        let userCredential = null;
+        let gasUrl = '';
+
+        // TODO: Google認証のコールバック関数を実装してください
+        // ヒント:
+        // function handleCredentialResponse(response) {
+        //     const credential = response.credential;
+        //     const payload = JSON.parse(atob(credential.split('.')[1]));
+        //     
+        //     userCredential = {
+        //         idToken: credential,
+        //         name: payload.name,
+        //         email: payload.email,
+        //         picture: payload.picture
+        //     };
+        //     
+        //     document.getElementById('user-name').textContent = payload.name;
+        //     document.getElementById('user-email').textContent = payload.email;
+        //     document.getElementById('user-picture').src = payload.picture;
+        //     document.getElementById('user-info').style.display = 'flex';
+        //     
+        //     console.log('ログイン成功:', payload.name);
+        // }
+
+        // 接続処理
+        document.getElementById('connect-btn').addEventListener('click', async () => {
+            const obnizId = document.getElementById('obniz-id').value.trim();
+            myPort = parseInt(document.getElementById('led-port').value);
+            gasUrl = document.getElementById('gas-url').value.trim();
+
+            if (!obnizId || isNaN(myPort) || myPort < 0 || myPort > 3) {
+                showStatus('obniz IDとLEDポート番号（0-3）を正しく入力してください', 'error');
+                return;
+            }
+
+            if (!userCredential) {
+                showStatus('先にGoogleアカウントでログインしてください', 'warning');
+                return;
+            }
+
+            if (!gasUrl) {
+                showStatus('Google Apps Script URLを入力してください', 'warning');
+                return;
+            }
+
+            try {
+                showStatus('接続中...', 'info');
+                obniz = new Obniz(obnizId);
+
+                obniz.onconnect = async () => {
+                    console.log('obnizに接続しました');
+                    showStatus('認証中...', 'info');
+                    obniz.send({ type: 'auth_attempt', id: authId });
+                };
+
+                obniz.onmessage = (message) => {
+                    if (message.type === 'auth_status') {
+                        if (message.success) {
+                            myPort = message.port;
+                            isConnected = true;
+                            showStatus(`認証成功！LEDポート: ${myPort}`, 'success');
+                            document.getElementById('port-info').textContent =
+                                `あなたのLEDポート: ${myPort}`;
+                            document.getElementById('control-area').style.display = 'block';
+                        } else {
+                            showStatus('認証失敗', 'error');
+                        }
+                    }
+                };
+
+            } catch (error) {
+                showStatus(`エラー: ${error.message}`, 'error');
+            }
+        });
+
+        // TODO: ログ送信関数を実装してください
+        // ヒント:
+        // async function sendLog(action, value) {
+        //     if (!userCredential) {
+        //         console.error('ログインしていません');
+        //         return;
+        //     }
+        //     
+        //     const logData = {
+        //         idToken: userCredential.idToken,
+        //         userName: userCredential.name,
+        //         userEmail: userCredential.email,
+        //         action: action,
+        //         value: value
+        //     };
+        //     
+        //     try {
+        //         const response = await fetch(gasUrl, {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             body: JSON.stringify(logData)
+        //         });
+        //         
+        //         const result = await response.json();
+        //         console.log('ログ送信結果:', result);
+        //         
+        //         // ローカルログ表示
+        //         addLogEntry(action, value);
+        //     } catch (error) {
+        //         console.error('ログ送信エラー:', error);
+        //     }
+        // }
+
+        // LED制御（ログ記録付き）
+        document.getElementById('led-on-btn').addEventListener('click', () => {
+            if (isConnected) {
+                obniz.send({ type: 'led_control', port: myPort, state: 'on' });
+                // TODO: sendLog('LED ON', myPort); を呼び出してください
+            }
+        });
+
+        document.getElementById('led-off-btn').addEventListener('click', () => {
+            if (isConnected) {
+                obniz.send({ type: 'led_control', port: myPort, state: 'off' });
+                // TODO: sendLog('LED OFF', myPort); を呼び出してください
+            }
+        });
+
+        // ローカルログ表示
+        function addLogEntry(action, value) {
+            const logDisplay = document.getElementById('log-display');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const timestamp = new Date().toLocaleTimeString('ja-JP');
+            entry.textContent = `[${timestamp}] ${action} - ポート${value}`;
+            logDisplay.insertBefore(entry, logDisplay.firstChild);
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('connection-status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status status-${type}`;
+            statusDiv.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>
