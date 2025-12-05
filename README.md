@@ -1,8 +1,6 @@
-# obniz リアルタイムIoT制御ハンズオン
+# obniz リアルタイムIoT制御ハンズオン ( #hokkaido_js )
 
-**hokkaido.js vol.05@Kushiro ハンズオン資料**
-
-obnizを使った4人同時リアルタイムIoT制御と、外部サービス（Airtable）との連携を学習するハンズオン資料です。
+2025-12-06(土) に開催される、hokkaido.js vol.05@Kushiro で使用するハンズオン資料です。obnizを使った4人同時リアルタイムIoT制御と、外部サービス（Airtable）との連携について触れています。
 
 イベント詳細: [hokkaido.js vol.05@Kushiro](https://hokkaido-js.connpass.com/event/363908/)
 
