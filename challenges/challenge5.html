@@ -122,7 +122,10 @@
                 return;
             }
 
-            obniz = new Obniz(obnizId);
+            // obnizに接続（複数クライアント同時接続のための設定）
+            obniz = new Obniz(obnizId, {
+                local_connect: false  // 重要: 複数人で同時接続するために必須
+            });
 
             obniz.onconnect = async () => {
                 document.getElementById('status').textContent = '接続成功！';
@@ -132,17 +135,14 @@
                 // LEDオブジェクトを作成
                 led = obniz.wired('LED', { anode: myPort, cathode: 'gnd' });
 
-                // センサー値の定期取得
-                setInterval(() => {
-                    const voltage = obniz.ad0.value;
-                    if (voltage !== null) {
-                        currentVoltage = voltage;
-                        currentPercent = Math.round((voltage / 3.3) * 100);
+                // センサー値の継続監視（推奨方法）
+                obniz.ad0.start(function(voltage) {
+                    currentVoltage = voltage;
+                    currentPercent = Math.round((voltage / 5.0) * 100);
 
-                        document.getElementById('voltage').textContent = currentVoltage.toFixed(2);
-                        document.getElementById('brightness-percent').textContent = currentPercent;
-                    }
-                }, 500);
+                    document.getElementById('voltage').textContent = currentVoltage.toFixed(2);
+                    document.getElementById('brightness-percent').textContent = currentPercent;
+                });
             };
         });
 

@@ -23,8 +23,10 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
     try {
         showStatus('接続中...', 'info');
 
-        // obnizに接続
-        obniz = new Obniz(obnizId);
+        // obnizに接続（複数クライアント同時接続のための設定）
+        obniz = new Obniz(obnizId, {
+            local_connect: false  // 重要: 複数人で同時接続するために必須
+        });
 
         obniz.onconnect = async () => {
             console.log('obnizに接続しました');
@@ -36,22 +38,19 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
             // LEDオブジェクトを作成
             led = obniz.wired('LED', { anode: myPort, cathode: 'gnd' });
 
-            // センサー値の定期取得と共有（500ms間隔）
-            setInterval(() => {
-                const voltage = obniz.ad0.value;
-                if (voltage !== null) {
-                    // 自分の画面に表示
-                    document.getElementById('brightness-value').textContent =
-                        voltage.toFixed(2) + ' V';
+            // センサー値の継続監視（推奨方法）
+            obniz.ad0.start(function(voltage) {
+                // 自分の画面に表示
+                document.getElementById('brightness-value').textContent =
+                    voltage.toFixed(2) + ' V';
 
-                    // 全員に共有
-                    obniz.send({
-                        type: 'sensor_update',
-                        voltage: voltage,
-                        from: myPort
-                    });
-                }
-            }, 500);
+                // 全員に共有
+                obniz.send({
+                    type: 'sensor_update',
+                    voltage: voltage,
+                    from: myPort
+                });
+            });
 
             document.getElementById('control-area').style.display = 'block';
         };
@@ -116,6 +115,14 @@ document.getElementById('led-off-btn').addEventListener('click', () => {
 function showStatus(message, type) {
     const statusDiv = document.getElementById('connection-status');
     statusDiv.textContent = message;
-    statusDiv.className = `status status-${type}`;
-    statusDiv.style.display = 'block';
+
+    // Tailwind CSSクラスを適用
+    const baseClasses = 'p-3 rounded-lg font-semibold border-l-4';
+    const typeClasses = {
+        'info': 'bg-blue-50 text-blue-800 border-blue-500',
+        'success': 'bg-green-50 text-green-800 border-green-500',
+        'error': 'bg-red-50 text-red-800 border-red-500'
+    };
+
+    statusDiv.className = `${baseClasses} ${typeClasses[type] || ''}`;
 }
