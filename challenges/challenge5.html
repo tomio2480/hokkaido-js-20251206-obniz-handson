@@ -33,9 +33,9 @@
             <input
                 type="number"
                 id="led-port"
-                placeholder="LEDポート番号 (0-3)"
-                min="0"
-                max="3"
+                placeholder="LEDポート番号 (1-4)"
+                min="1"
+                max="4"
                 class="w-full p-2 border rounded"
             >
             <button
@@ -117,7 +117,7 @@
             const obnizId = document.getElementById('obniz-id').value.trim();
             myPort = parseInt(document.getElementById('led-port').value);
 
-            if (!obnizId || isNaN(myPort) || myPort < 0 || myPort > 3) {
+            if (!obnizId || isNaN(myPort) || myPort < 1 || myPort > 4) {
                 alert('入力内容を確認してください');
                 return;
             }

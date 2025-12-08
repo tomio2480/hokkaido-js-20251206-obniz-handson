@@ -15,8 +15,8 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
         return;
     }
 
-    if (isNaN(myPort) || myPort < 0 || myPort > 3) {
-        showStatus('LEDポート番号は0-3の範囲で入力してください', 'error');
+    if (isNaN(myPort) || myPort < 1 || myPort > 4) {
+        showStatus('LEDポート番号は1-4の範囲で入力してください', 'error');
         return;
     }
 
