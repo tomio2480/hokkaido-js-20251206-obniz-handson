@@ -77,7 +77,7 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
         pwm.freq(1000);
 
         // センサー値の継続監視
-        obniz.ad5.start(function(voltage) {
+        obniz.ad0.start(function(voltage) {
             document.getElementById('brightness-value').textContent = voltage.toFixed(2);
             const percent = Math.round((voltage / 5.0) * 100);
             document.getElementById('brightness-percent').textContent = percent;

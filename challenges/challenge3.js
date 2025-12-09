@@ -75,7 +75,7 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
         //
         // Math.max(0, Math.min(100, ledRatio))
         //   → 値を0-100の範囲に制限します（クリッピング）
-        obniz.ad5.start(function(voltage) {
+        obniz.ad0.start(function(voltage) {
             // 電圧値を表示
             document.getElementById('brightness-value').textContent = voltage.toFixed(2);
 

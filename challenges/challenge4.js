@@ -66,7 +66,7 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
         pwm.freq(1000);
 
         // センサー値の継続監視と共有
-        obniz.ad5.start(function(voltage) {
+        obniz.ad0.start(function(voltage) {
             const percent = Math.round((voltage / 5.0) * 100);
 
             // 自分の画面を更新

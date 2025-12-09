@@ -68,7 +68,7 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
         led = obniz.wired('LED', { anode: LED_PORT });
 
         // センサー値の継続監視
-        obniz.ad5.start(function(voltage) {
+        obniz.ad0.start(function(voltage) {
             currentVoltage = voltage;
             currentPercent = Math.round((voltage / 5.0) * 100);
 

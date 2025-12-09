@@ -71,13 +71,13 @@ document.getElementById('connect-btn').addEventListener('click', async () => {
         // 課題1のポイント: センサー値を%に変換
         // ========================================
         // ワンポイント解説:
-        // obniz.ad5.start(callback)
+        // obniz.ad0.start(callback)
         //   → アナログ入力の継続監視を開始します
         //   → コールバック関数で電圧値（0-5V）を受け取ります
         //
         // Math.round((voltage / 5.0) * 100)
         //   → 電圧値を0-100%に変換します
-        obniz.ad5.start(function(voltage) {
+        obniz.ad0.start(function(voltage) {
             // 電圧値を表示
             document.getElementById('brightness-value').textContent = voltage.toFixed(2);
 
