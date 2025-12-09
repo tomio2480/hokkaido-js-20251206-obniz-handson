@@ -4,50 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>obniz LED制御 - ハンズオンサンプル</title>
-    <script src="https://cdn.tailwindcss.com/4.0.0-beta.6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 p-5">
-    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-2xl p-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">obniz LED制御</h1>
-        <p class="text-sm text-gray-600 mb-8">JavaScriptでIoTデバイスをリアルタイム制御</p>
+<body class="p-8 max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold mb-2">obniz LED制御</h1>
+    <p class="text-gray-600 mb-6">JavaScriptでIoTデバイスをリアルタイム制御</p>
 
-        <!-- 接続エリア -->
-        <div id="connection-area" class="mb-8 p-6 bg-gray-50 rounded-xl border-l-4 border-indigo-500">
-            <h2 class="text-xl font-semibold text-indigo-600 mb-4">接続設定</h2>
+    <!-- 接続エリア -->
+    <div id="connection-area" class="mb-6 p-4 border rounded">
+        <h2 class="text-lg font-semibold mb-3">接続</h2>
+        <button id="connect-btn" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">接続</button>
+        <div id="connection-status" class="mt-3"></div>
+    </div>
 
-            <div class="mb-4">
-                <label for="obniz-id" class="block mb-1 text-sm font-semibold text-gray-700">obniz ID</label>
-                <input type="text" id="obniz-id" placeholder="例: 1234-5678" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500">
+    <!-- 制御エリア（接続後に表示） -->
+    <div id="control-area" class="hidden">
+        <div class="mb-6 p-4 border rounded">
+            <h2 class="text-lg font-semibold mb-3">LED制御</h2>
+
+            <div class="flex gap-2 mb-3">
+                <button id="led-on-btn" class="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600">LED ON</button>
+                <button id="led-off-btn" class="flex-1 bg-red-500 text-white p-2 rounded hover:bg-red-600">LED OFF</button>
             </div>
 
-            <div class="mb-4">
-                <label for="led-port" class="block mb-1 text-sm font-semibold text-gray-700">LEDポート番号</label>
-                <input type="number" id="led-port" placeholder="1-4" min="1" max="4" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500">
-            </div>
-
-            <button id="connect-btn" class="w-full bg-indigo-500 text-white p-3 rounded-lg font-semibold hover:bg-indigo-600 transition">接続</button>
-
-            <div id="connection-status" class="mt-4"></div>
+            <div id="led-status" class="p-2 bg-gray-50 rounded text-sm text-center"></div>
         </div>
 
-        <!-- 制御エリア -->
-        <div id="control-area" class="hidden">
-            <div class="mb-8 p-6 bg-gray-50 rounded-xl border-l-4 border-indigo-500">
-                <h2 class="text-xl font-semibold text-indigo-600 mb-4">LED制御</h2>
-                <p id="port-info" class="mb-4 p-3 bg-blue-50 text-blue-800 rounded-lg border-l-4 border-blue-500 font-semibold"></p>
-
-                <div class="flex gap-2">
-                    <button id="led-on-btn" class="flex-1 bg-green-500 text-white p-3 rounded-lg font-semibold hover:bg-green-600 transition">LED ON</button>
-                    <button id="led-off-btn" class="flex-1 bg-red-500 text-white p-3 rounded-lg font-semibold hover:bg-red-600 transition">LED OFF</button>
-                </div>
-            </div>
-
-            <div class="p-6 bg-gray-50 rounded-xl border-l-4 border-indigo-500">
-                <h2 class="text-xl font-semibold text-indigo-600 mb-4">センサー値</h2>
-                <p class="text-gray-600 mb-2 text-sm">明るさセンサー（CdSセル）の値</p>
-                <div class="text-center p-5 bg-white rounded-lg">
-                    <span id="brightness-value" class="text-4xl font-bold text-indigo-600">--</span>
-                </div>
+        <div class="p-4 border rounded">
+            <h2 class="text-lg font-semibold mb-3">センサー値</h2>
+            <p class="text-gray-600 mb-2 text-sm">明るさセンサー（CdSセル）の値</p>
+            <div class="text-center p-4">
+                <span id="brightness-value" class="text-3xl font-bold">--</span>
             </div>
         </div>
     </div>

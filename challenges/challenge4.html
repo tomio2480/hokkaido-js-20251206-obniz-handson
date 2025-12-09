@@ -4,243 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>課題4: リアルタイム状態モニタ</title>
-    <script src="https://cdn.tailwindcss.com/4.0.0-beta.6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="p-8 max-w-3xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">課題4: リアルタイム状態モニタ</h1>
+<body class="p-8 max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold mb-2">課題4: リアルタイム状態モニタ</h1>
+    <p class="text-gray-600 mb-6">参加者全員のLED状態とセンサー値をリアルタイム表示</p>
 
-    <div id="connection-area" class="mb-8 p-6 border rounded-lg">
-        <h2 class="text-xl font-semibold mb-4">接続設定</h2>
-        <div class="space-y-4">
-            <input
-                type="text"
-                id="obniz-id"
-                placeholder="obniz ID"
-                class="w-full p-2 border rounded"
-            >
-            <input
-                type="number"
-                id="led-port"
-                placeholder="LEDポート番号 (1-4)"
-                min="1"
-                max="4"
-                class="w-full p-2 border rounded"
-            >
-            <button
-                id="connect-btn"
-                class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-            >
-                接続
-            </button>
-        </div>
+    <!-- 接続エリア -->
+    <div id="connection-area" class="mb-6 p-4 border rounded">
+        <h2 class="text-lg font-semibold mb-3">接続</h2>
+        <button id="connect-btn" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">接続</button>
+        <div id="connection-status" class="mt-3"></div>
     </div>
 
-    <div id="control-area" class="hidden space-y-6">
-        <div class="p-6 border rounded-lg bg-purple-50">
-            <h2 class="text-xl font-semibold mb-4">全体モニタ</h2>
+    <!-- 制御エリア（接続後に表示） -->
+    <div id="control-area" class="hidden">
+        <!-- 全体モニタ（課題4で追加） -->
+        <div class="mb-6 p-4 border rounded bg-purple-50">
+            <h2 class="text-lg font-semibold mb-3">全体モニタ</h2>
 
-            <div class="mb-6">
-                <h3 class="text-lg font-semibold mb-3">LED状態</h3>
-                <ul class="space-y-2">
+            <div class="mb-4">
+                <h3 class="font-semibold mb-2">LED状態</h3>
+                <ul class="space-y-1">
                     <li class="flex items-center justify-between p-2 bg-white rounded">
-                        <span class="font-medium">ポート0:</span>
-                        <span id="led-0-status" class="font-mono text-gray-500">--</span>
-                    </li>
-                    <li class="flex items-center justify-between p-2 bg-white rounded">
-                        <span class="font-medium">ポート1:</span>
+                        <span>ポート1:</span>
                         <span id="led-1-status" class="font-mono text-gray-500">--</span>
                     </li>
                     <li class="flex items-center justify-between p-2 bg-white rounded">
-                        <span class="font-medium">ポート2:</span>
+                        <span>ポート2:</span>
                         <span id="led-2-status" class="font-mono text-gray-500">--</span>
                     </li>
                     <li class="flex items-center justify-between p-2 bg-white rounded">
-                        <span class="font-medium">ポート3:</span>
+                        <span>ポート3:</span>
                         <span id="led-3-status" class="font-mono text-gray-500">--</span>
+                    </li>
+                    <li class="flex items-center justify-between p-2 bg-white rounded">
+                        <span>ポート4:</span>
+                        <span id="led-4-status" class="font-mono text-gray-500">--</span>
                     </li>
                 </ul>
             </div>
 
             <div>
-                <h3 class="text-lg font-semibold mb-3">共通センサー</h3>
-                <div class="p-4 bg-white rounded">
-                    <p class="text-lg">明るさ: <span id="common-brightness" class="font-mono font-bold text-blue-600">--</span> %</p>
-                    <p class="text-lg">電圧: <span id="common-voltage" class="font-mono font-bold">--</span> V</p>
+                <h3 class="font-semibold mb-2">共通センサー</h3>
+                <div class="p-3 bg-white rounded">
+                    <p>明るさ: <span id="common-brightness" class="font-bold text-blue-600">--</span> %</p>
+                    <p>電圧: <span id="common-voltage" class="font-bold">--</span> V</p>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 border rounded-lg">
-            <h2 class="text-xl font-semibold mb-4">自分のLED制御（ポート<span id="my-port-display" class="text-blue-600">--</span>）</h2>
-            <div class="space-y-4">
-                <div class="flex gap-2">
-                    <button
-                        id="led-on-btn"
-                        class="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600"
-                    >
-                        LED ON
-                    </button>
-                    <button
-                        id="led-off-btn"
-                        class="flex-1 bg-red-500 text-white p-2 rounded hover:bg-red-600"
-                    >
-                        LED OFF
-                    </button>
-                </div>
+        <div class="mb-6 p-4 border rounded">
+            <h2 class="text-lg font-semibold mb-3">自分のLED制御（ポート<span id="my-port-display" class="text-blue-600">--</span>）</h2>
 
-                <div>
-                    <h3 class="text-lg font-semibold mb-2">明るさ調整</h3>
-                    <input
-                        type="range"
-                        id="brightness-slider"
-                        min="0"
-                        max="100"
-                        value="50"
-                        class="w-full"
-                    >
-                    <p class="text-center text-lg">
-                        明るさ: <span id="brightness-display" class="font-mono font-bold text-blue-600">50</span>%
-                    </p>
-                </div>
+            <div class="flex gap-2 mb-3">
+                <button id="led-on-btn" class="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600">LED ON</button>
+                <button id="led-off-btn" class="flex-1 bg-red-500 text-white p-2 rounded hover:bg-red-600">LED OFF</button>
             </div>
+
+            <div class="mt-4 p-3 bg-blue-50 rounded">
+                <h3 class="font-semibold mb-2">明るさ調整（PWM）</h3>
+                <input type="range" id="brightness-slider" min="0" max="100" value="50" class="w-full">
+                <p class="text-center mt-2">明るさ: <span id="brightness-display" class="font-bold text-blue-600">50</span>%</p>
+            </div>
+
+            <div id="led-status" class="mt-3 p-2 bg-gray-50 rounded text-sm text-center"></div>
         </div>
     </div>
 
     <script src="https://unpkg.com/obniz/obniz.js"></script>
-    <script>
-        let obniz;
-        let myPort;
-        let led;
-        let pwm;
-
-        // 接続ボタンのクリックイベント
-        document.getElementById('connect-btn').addEventListener('click', async () => {
-            const obnizId = document.getElementById('obniz-id').value;
-            myPort = parseInt(document.getElementById('led-port').value);
-
-            // 入力チェック
-            if (!obnizId || myPort < 1 || myPort > 4 || isNaN(myPort)) {
-                alert('obniz IDとLEDポート番号（1-4）を正しく入力してください');
-                return;
-            }
-
-            // obnizに接続（複数クライアント同時接続のための設定）
-            obniz = new Obniz(obnizId, {
-                local_connect: false  // 重要: 複数人で同時接続するために必須
-            });
-
-            obniz.onconnect = async () => {
-                console.log('obnizに接続しました');
-                alert(`接続成功！あなたのLEDポート: ${myPort}`);
-
-                // 自分のポート番号を表示
-                document.getElementById('my-port-display').textContent = myPort;
-
-                // LEDオブジェクトを作成
-                led = obniz.wired('LED', { anode: myPort, cathode: 'gnd' });
-
-                // PWMオブジェクトを取得して初期化
-                pwm = obniz.getFreePwm();
-                pwm.start({ io: myPort });
-                pwm.freq(1000);
-
-                // センサー値の継続監視（推奨方法）
-                obniz.ad0.start(function(voltage) {
-                    // 電圧値を%に変換（5V基準）
-                    const percent = Math.round((voltage / 5.0) * 100);
-
-                    // 共通センサー値を更新
-                    document.getElementById('common-brightness').textContent = percent;
-                    document.getElementById('common-voltage').textContent = voltage.toFixed(2);
-
-                    // 全員に共有
-                    obniz.send({
-                        type: 'sensor_update',
-                        voltage: voltage,
-                        percent: percent,
-                        from: myPort
-                    });
-                });
-
-                document.getElementById('control-area').classList.remove('hidden');
-            };
-
-            // メッセージ受信
-            obniz.onmessage = (message) => {
-                // センサー値の受信（他の参加者からも受信）
-                if (message.type === 'sensor_update') {
-                    // 共通センサー値を更新
-                    document.getElementById('common-brightness').textContent = message.percent;
-                    document.getElementById('common-voltage').textContent = message.voltage.toFixed(2);
-
-                    console.log(`ポート${message.from}からセンサー値: ${message.voltage}V (${message.percent}%)`);
-                }
-
-                // LED状態の受信
-                if (message.type === 'led_update') {
-                    const port = message.port;
-                    const statusElement = document.getElementById(`led-${port}-status`);
-
-                    if (statusElement) {
-                        let statusText = '';
-                        let statusClass = '';
-
-                        if (message.state === 'on') {
-                            statusText = 'ON';
-                            statusClass = 'text-green-600 font-bold';
-                        } else if (message.state === 'off') {
-                            statusText = 'OFF';
-                            statusClass = 'text-red-600 font-bold';
-                        } else if (message.state === 'pwm') {
-                            statusText = `PWM ${message.duty}%`;
-                            statusClass = 'text-blue-600 font-bold';
-                        }
-
-                        statusElement.textContent = statusText;
-                        statusElement.className = `font-mono ${statusClass}`;
-                    }
-
-                    console.log(`ポート${port}: ${message.state}${message.duty ? ' (' + message.duty + '%)' : ''}`);
-                }
-            };
-        });
-
-        // LED ONボタン
-        document.getElementById('led-on-btn').addEventListener('click', () => {
-            if (led) {
-                led.on();
-                // 状態を全員に共有
-                obniz.send({ type: 'led_update', port: myPort, state: 'on' });
-            }
-        });
-
-        // LED OFFボタン
-        document.getElementById('led-off-btn').addEventListener('click', () => {
-            if (led) {
-                led.off();
-                // 状態を全員に共有
-                obniz.send({ type: 'led_update', port: myPort, state: 'off' });
-            }
-        });
-
-        // スライダーの変更イベント
-        document.getElementById('brightness-slider').addEventListener('input', (e) => {
-            const ratio = parseInt(e.target.value);
-            document.getElementById('brightness-display').textContent = ratio;
-
-            // PWM制御
-            if (pwm) {
-                pwm.duty(ratio);
-
-                // 状態を全員に共有
-                obniz.send({
-                    type: 'led_update',
-                    port: myPort,
-                    state: 'pwm',
-                    duty: ratio
-                });
-            }
-        });
-    </script>
+    <script src="challenge4.js"></script>
 </body>
 </html>

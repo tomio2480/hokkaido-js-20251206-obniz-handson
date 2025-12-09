@@ -4,201 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>課題3: 自動調光ライト</title>
-    <script src="https://cdn.tailwindcss.com/4.0.0-beta.6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="p-8 max-w-2xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">課題3: 自動調光ライト</h1>
+    <h1 class="text-2xl font-bold mb-2">課題3: 自動調光ライト</h1>
+    <p class="text-gray-600 mb-6">センサー値に連動してLEDの明るさを自動調整</p>
 
-    <div id="connection-area" class="mb-8 p-6 border rounded-lg">
-        <h2 class="text-xl font-semibold mb-4">接続設定</h2>
-        <div class="space-y-4">
-            <input
-                type="text"
-                id="obniz-id"
-                placeholder="obniz ID"
-                class="w-full p-2 border rounded"
-            >
-            <input
-                type="number"
-                id="led-port"
-                placeholder="LEDポート番号 (1-4)"
-                min="1"
-                max="4"
-                class="w-full p-2 border rounded"
-            >
-            <button
-                id="connect-btn"
-                class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-            >
-                接続
-            </button>
-        </div>
+    <!-- 接続エリア -->
+    <div id="connection-area" class="mb-6 p-4 border rounded">
+        <h2 class="text-lg font-semibold mb-3">接続</h2>
+        <button id="connect-btn" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">接続</button>
+        <div id="connection-status" class="mt-3"></div>
     </div>
 
-    <div id="control-area" class="hidden space-y-6">
-        <div class="p-6 border rounded-lg bg-blue-50">
-            <h2 class="text-xl font-semibold mb-4">自動調光モード</h2>
-            <p class="text-sm text-gray-700 mb-4">センサー値に基づいてLEDの明るさが自動的に調整されます。周囲が暗くなるとLEDが明るくなります。</p>
+    <!-- 制御エリア（接続後に表示） -->
+    <div id="control-area" class="hidden">
+        <!-- 自動調光モード表示（課題3で追加） -->
+        <div class="mb-6 p-4 border rounded bg-green-50">
+            <h2 class="text-lg font-semibold mb-3">自動調光モード</h2>
+            <p class="text-sm text-gray-600 mb-3">周囲が暗くなるとLEDが明るくなります</p>
             <div class="space-y-2">
-                <p class="text-lg">センサー電圧: <span id="brightness-value" class="font-mono font-bold">--</span> V</p>
-                <p class="text-lg">センサー明るさ: <span id="brightness-percent" class="font-mono font-bold text-blue-600">--</span> %</p>
+                <p class="text-lg">センサー: <span id="sensor-percent" class="font-mono font-bold text-blue-600">--</span> %</p>
                 <p class="text-lg">LED明るさ: <span id="led-brightness" class="font-mono font-bold text-green-600">--</span> %</p>
+            </div>
+            <div id="led-status" class="mt-3 p-2 bg-white rounded text-sm text-center"></div>
+        </div>
+
+        <div class="mb-6 p-4 border rounded">
+            <h2 class="text-lg font-semibold mb-3">手動制御</h2>
+
+            <div class="flex gap-2 mb-3">
+                <button id="led-on-btn" class="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600">LED ON</button>
+                <button id="led-off-btn" class="flex-1 bg-red-500 text-white p-2 rounded hover:bg-red-600">LED OFF</button>
+            </div>
+
+            <div class="mt-4 p-3 bg-blue-50 rounded">
+                <h3 class="font-semibold mb-2">手動調整（PWM）</h3>
+                <input type="range" id="brightness-slider" min="0" max="100" value="50" class="w-full">
+                <p class="text-center mt-2">明るさ: <span id="brightness-display" class="font-bold text-blue-600">50</span>%</p>
             </div>
         </div>
 
-        <div class="p-6 border rounded-lg">
-            <h2 class="text-xl font-semibold mb-4">手動制御</h2>
-            <div class="space-y-4">
-                <div class="flex gap-2">
-                    <button
-                        id="led-on-btn"
-                        class="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600"
-                    >
-                        LED ON
-                    </button>
-                    <button
-                        id="led-off-btn"
-                        class="flex-1 bg-red-500 text-white p-2 rounded hover:bg-red-600"
-                    >
-                        LED OFF
-                    </button>
-                </div>
-
-                <div>
-                    <h3 class="text-lg font-semibold mb-2">明るさ調整</h3>
-                    <input
-                        type="range"
-                        id="brightness-slider"
-                        min="0"
-                        max="100"
-                        value="50"
-                        class="w-full"
-                    >
-                    <p class="text-center text-lg">
-                        明るさ: <span id="brightness-display" class="font-mono font-bold text-blue-600">50</span>%
-                    </p>
-                </div>
+        <div class="p-4 border rounded">
+            <h2 class="text-lg font-semibold mb-3">センサー値</h2>
+            <div class="space-y-2">
+                <p class="text-lg">電圧: <span id="brightness-value" class="font-mono font-bold">--</span> V</p>
             </div>
         </div>
     </div>
 
     <script src="https://unpkg.com/obniz/obniz.js"></script>
-    <script>
-        let obniz;
-        let myPort;
-        let led;
-        let pwm;
-
-        // 接続ボタンのクリックイベント
-        document.getElementById('connect-btn').addEventListener('click', async () => {
-            const obnizId = document.getElementById('obniz-id').value;
-            myPort = parseInt(document.getElementById('led-port').value);
-
-            // 入力チェック
-            if (!obnizId || myPort < 1 || myPort > 4 || isNaN(myPort)) {
-                alert('obniz IDとLEDポート番号（1-4）を正しく入力してください');
-                return;
-            }
-
-            // obnizに接続（複数クライアント同時接続のための設定）
-            obniz = new Obniz(obnizId, {
-                local_connect: false  // 重要: 複数人で同時接続するために必須
-            });
-
-            obniz.onconnect = async () => {
-                console.log('obnizに接続しました');
-                alert(`接続成功！あなたのLEDポート: ${myPort}`);
-
-                // LEDオブジェクトを作成
-                led = obniz.wired('LED', { anode: myPort, cathode: 'gnd' });
-
-                // PWMオブジェクトを取得して初期化
-                pwm = obniz.getFreePwm();
-                pwm.start({ io: myPort });
-                pwm.freq(1000);
-
-                // センサー値の継続監視で自動調光
-                obniz.ad0.start(function(voltage) {
-                    // 電圧値を表示
-                    document.getElementById('brightness-value').textContent =
-                        voltage.toFixed(2);
-
-                    // 電圧値を0-100の範囲に変換（5V基準）
-                    const sensorPercent = Math.round((voltage / 5.0) * 100);
-                    document.getElementById('brightness-percent').textContent = sensorPercent;
-
-                    // 反比例計算: 暗い → LEDを明るく
-                    const ledRatio = 100 - sensorPercent;
-                    document.getElementById('led-brightness').textContent = ledRatio;
-
-                    // 自動でLED明るさを調整
-                    if (pwm) {
-                        pwm.duty(Math.max(0, Math.min(100, ledRatio)));
-                    }
-
-                    // 全員に共有
-                    obniz.send({
-                        type: 'sensor_update',
-                            voltage: voltage,
-                            sensorPercent: sensorPercent,
-                            ledRatio: ledRatio,
-                            from: myPort
-                        });
-                });
-
-                document.getElementById('control-area').classList.remove('hidden');
-            };
-
-            // メッセージ受信
-            obniz.onmessage = (message) => {
-                // センサー値の受信（他の参加者からも受信）
-                if (message.type === 'sensor_update') {
-                    console.log(`ポート${message.from}からセンサー値: ${message.voltage}V (センサー: ${message.sensorPercent}%, LED: ${message.ledRatio}%)`);
-                }
-
-                // LED状態の受信
-                if (message.type === 'led_update') {
-                    console.log(`ポート${message.port}: ${message.state}`);
-                }
-            };
-        });
-
-        // LED ONボタン
-        document.getElementById('led-on-btn').addEventListener('click', () => {
-            if (led) {
-                led.on();
-                // 状態を全員に共有
-                obniz.send({ type: 'led_update', port: myPort, state: 'on' });
-            }
-        });
-
-        // LED OFFボタン
-        document.getElementById('led-off-btn').addEventListener('click', () => {
-            if (led) {
-                led.off();
-                // 状態を全員に共有
-                obniz.send({ type: 'led_update', port: myPort, state: 'off' });
-            }
-        });
-
-        // スライダーの変更イベント
-        document.getElementById('brightness-slider').addEventListener('input', (e) => {
-            const ratio = parseInt(e.target.value);
-            document.getElementById('brightness-display').textContent = ratio;
-
-            // PWM制御
-            if (pwm) {
-                pwm.duty(ratio);
-
-                // 状態を全員に共有
-                obniz.send({
-                    type: 'led_update',
-                    port: myPort,
-                    state: 'pwm',
-                    duty: ratio
-                });
-            }
-        });
-    </script>
+    <script src="challenge3.js"></script>
 </body>
 </html>

@@ -11,15 +11,20 @@ obniz-hokkaido-js-946/
 ├── ハンズオン資料.md                # メインのハンズオン資料
 ├── ローカルHTTPサーバー起動方法.md  # HTTPサーバーの起動方法（参考）
 ├── README.md                        # このファイル
-├── sample/                          # サンプルコード
-│   ├── index.html                  # クライアント側HTML（Tailwind CSS v4使用）
-│   └── script.js                   # クライアント側JavaScript
-└── challenges/                     # 課題1-5の実装済みファイル
+├── sample/                          # サンプルコード（参加者が書き足す用）
+│   ├── index.html                  # HTML（接続ボタンとLED制御UI）
+│   └── script.js                   # JavaScript（TODOを埋めていく）
+└── challenges/                     # 課題1-5の解答例
     ├── challenge1.html             # 課題1: センサー値を%に変換
+    ├── challenge1.js
     ├── challenge2.html             # 課題2: スライダーを使ったLED制御（PWM）
+    ├── challenge2.js
     ├── challenge3.html             # 課題3: 自動調光ライト
+    ├── challenge3.js
     ├── challenge4.html             # 課題4: リアルタイム状態モニタ
-    └── challenge5.html             # 課題5: Airtableログ記録
+    ├── challenge4.js
+    ├── challenge5.html             # 課題5: Airtableログ記録
+    └── challenge5.js
 ```
 
 **注**: 全てのHTMLファイルはTailwind CSS v4を使用してスタイリングされています。
@@ -28,15 +33,18 @@ obniz-hokkaido-js-946/
 
 ### 1. サンプルコードの動作確認
 
-1. `sample/index.html`をWebブラウザで開く
-2. obniz IDとLEDポート番号（1-4）を入力
+1. `sample/script.js` の設定値を変更
+   - `OBNIZ_ID`: 配布されたobniz ID
+   - `LED_PORT`: 割り当てられたポート番号（0-3）
+   - `ACCESS_TOKEN`: 必要に応じてアクセストークン
+2. `sample/index.html` をWebブラウザで開く
 3. 接続ボタンをクリック
-4. LED制御とセンサー値を確認
+4. ハンズオン資料に従ってTODO部分にコードを追加
 
 ### 2. 課題に挑戦
 
-`challenges/`フォルダ内のファイルには、各課題の実装が既に完成した状態で含まれています。
-詳細は`ハンズオン資料.md`を参照してください。
+`sample/script.js` に書き足していく形で各課題に取り組みます。
+`challenges/` フォルダには解答例が用意されています。
 
 **課題一覧:**
 - 課題1: センサー値を%に変換
@@ -48,28 +56,26 @@ obniz-hokkaido-js-946/
 ### 3. 課題5の準備
 
 課題5を実施する場合、Airtableの設定が必要です。
-`challenge5.html`のスクリプト内で以下を設定してください：
+`challenges/challenge5.js` の設定値を変更してください：
 
 ```javascript
 const AIRTABLE_TOKEN = 'あなたのPersonal Access Token';
 const BASE_ID = 'あなたのBase ID';
+const TABLE_NAME = '操作ログ';  // Airtableで作成したテーブル名をそのまま入力
 ```
 
-詳細は`ハンズオン資料.md`の課題5セクションを参照してください。
+詳細は `ハンズオン資料.md` の課題5セクションを参照してください。
 
-**HTTPサーバーについて:**
-課題5はファイルシステムから直接開いても動作します。
-ローカルHTTPサーバーの起動は任意です（詳細は`ローカルHTTPサーバー起動方法.md`参照）。
+## 📝 設定値について
 
-## 📝 ポート番号割り当て
+各JavaScriptファイルの冒頭に設定値がハードコードされています。
+ハンズオン当日に配布される情報に基づいて変更してください。
 
-ハンズオン当日に各参加者にLEDポート番号（1-4）を割り当てます。
-
-**ポート番号の例**:
-- 参加者1 → ポート1（赤色LED）
-- 参加者2 → ポート2（黄色LED）
-- 参加者3 → ポート3（緑色LED）
-- 参加者4 → ポート4（青色LED）
+```javascript
+const OBNIZ_ID = '1234-5678';      // 配布されたobniz ID
+const LED_PORT = 0;                 // 割り当てられたポート番号（0-3）
+const ACCESS_TOKEN = '';            // アクセストークン（不要なら空文字）
+```
 
 ## 🔧 必要な環境
 
@@ -79,10 +85,10 @@ const BASE_ID = 'あなたのBase ID';
 
 ## 💡 重要な変更点（公式ドキュメント準拠）
 
-このハンズオン資料は、obniz公式ドキュメントに基づいて以下の点を修正しています：
+このハンズオン資料は、obniz公式ドキュメントに基づいています：
 
 1. **複数クライアント同時接続**: `local_connect: false`の設定を追加
-2. **PWM制御**: `led.pwm()`ではなく`obniz.getFreePwm()`を使用
+2. **PWM制御**: `obniz.getFreePwm()`を使用
 3. **センサー値取得**: `obniz.ad0.start()`で継続監視を実装
 4. **電圧基準**: 5V基準で計算
 
